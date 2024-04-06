@@ -5,17 +5,22 @@ import model.Task;
 import model.Epic;
 import model.Status;
 
+import java.util.Map;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.ArrayList;
+
 public class TaskManager {
-    private Map<Integer, Task> tasks; // Хранение всех задач
-    private Map<Integer, Epic> epics; // Хранение всех эпиков
+    private Map<Integer, Task> tasks; // Хр задач
+    private Map<Integer, Epic> epics; // Хр эпиковов
+    private Map<Integer, SubTask> allSubTasks; // список всех подзадач и эпиков
+    private int generatorId;
 
     public TaskManager() {
         tasks = new HashMap<>();
         epics = new HashMap<>();
+        allSubTasks = new HashMap<>();
+        generatorId = 0;
     }
 
     // Методы для работы с задачами
@@ -34,11 +39,6 @@ public class TaskManager {
     // c. Получение по идентификатору.
     public Task getTaskById(int id) {
         return tasks.get(id); // Возвращаем задачу по заданному идентификатору
-    }
-
-    // Генерация ID для задачи
-    private int generateId() {
-        return tasks.size() + 1; // увел мапу на 1 для генерации нов ID
     }
 
     // d. Создание. Сам объект должен передаваться в качестве параметра.
@@ -77,18 +77,39 @@ public class TaskManager {
         }
     }
 
-    // Метод для расчета статуса эпика
-    public Status calculateStatus(Epic epic) {
-        Status status = Status.NEW;
-        epic.setStatus(status);
-        return status;
+
+    private int generateId() {
+        return ++generatorId;
+    }
+
+    // Метод для доб новой задачи
+    public int addNewTask(Task task) {
+        final int id = generateId(); //ид+
+        task.setId(id); // Уст идентификатор
+        tasks.put(id, task); // Добавляем задачу
+        return id;
+    }
+
+    // Метод для добавления нового эпика
+    public int addEpic(Epic epic) {
+        final int id = generateId(); // Генерируем ид
+        epic.setId(id); // Уст идентификатор
+        epics.put(id, epic); // Добавляем эпик
+        return id;
+    }
+
+    // Метод для добавления новой подзадачи к эпику
+    public int addSubTask(SubTask subTask, Epic epic) {
+        final int id = generateId(); // Генерируем ид
+        subTask.setId(id);
+        allSubTasks.put(id, subTask); // Доб подзадачу в общий список подзадач
+        epic.addSubTask(subTask); // Добавляем подзадачу к эпику
+        epic.updateStatus(); // Обновляем статус эпика
+        return id;
     }
 
     @Override
     public String toString() {
-        return "TaskManager{" +
-                "tasks=" + tasks +
-                ", epics=" + epics +
-                '}';
+        return "TaskManager{" + "tasks=" + tasks + ", epics=" + epics + '}';
     }
 }
