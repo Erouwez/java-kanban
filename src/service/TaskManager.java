@@ -40,17 +40,29 @@ public class TaskManager {
 
     // b. Удаление всех задач.
     public boolean deleteAllTasks() {
-        deleteSubtasks(); // Удаляем все подзадачи
-        deleteEpics(); // Удаляем все эпики
         tasks.clear(); // Очищаем список всех задач
         return true; // Возврат true для обозначения удаления
     }
     public void deleteSubtasks() {
         allSubTasks.clear(); // Очищаем список всех подзадач
+        // Удаляем подзадачи из всех эпиков и пересчитываем статусы
+        for (Epic epic : epics.values()) {
+            List<SubTask> subTasks = epic.getSubTasks();
+            for (SubTask subTask : subTasks) {
+                allSubTasks.remove(subTask.getId());
+            }
+            epic.getSubTasks().clear(); // Удаляем подзадачи из эпика
+            epic.updateStatus(); // Обновляем статус эпика
+        }
     }
     public void deleteEpics() {
+        // Удаляем подзадачи из всех эпиков и из общего списка
         for (Epic epic : epics.values()) {
-            epic.getSubTasks().clear(); // Очищаем список подзадач у каждого эпика
+            List<SubTask> subTasks = epic.getSubTasks();
+            for (SubTask subTask : subTasks) {
+                allSubTasks.remove(subTask.getId());
+            }
+            epic.getSubTasks().clear(); // Удаляем подзадачи из эпика
         }
         epics.clear(); // Очищаем список всех эпиков
     }
